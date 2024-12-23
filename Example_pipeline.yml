@@ -1,0 +1,29 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - main
+pr:
+  - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+# Install Databricks CLI
+- script: |
+    curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+# Destroy previous assets and deploy new ones
+- script: |
+    ${env:DATABRICKS_HOST}
+    ${env:DATABRICKS_TOKEN}
+    databricks bundle destroy --auto-approve --target prod
+    databricks bundle deploy --target prod
+
+# Run the newly deployed assets
+- script: |
+    databricks bundle run dlt-sensors-pipeline --refresh-all --target prod
